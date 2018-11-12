@@ -1,0 +1,6 @@
+{
+  "Goals": null,
+  "Player": null,
+  "Coins": null,
+  "Enemies": null
+}

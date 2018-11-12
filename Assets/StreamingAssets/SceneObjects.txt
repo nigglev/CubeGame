@@ -1,0 +1,78 @@
+{
+	"Goals":
+	[
+	{
+	  "Prefab Path": "Goal",
+	  "Coordinate X": 5.0,
+	  "Coordinate Y": 5.0,
+	  "Coordinate Z": 5.0
+	},
+
+	{
+	  "Prefab Path": "Goal",
+	  "Coordinate X": 5.0,
+	  "Coordinate Y": 5.0,
+	  "Coordinate Z": 5.0
+	}
+	],
+	
+	"Player":
+	{
+	  "Prefab Path": "Player",
+	  "Coordinate X": 0.0,
+	  "Coordinate Y": 3.0,
+	  "Coordinate Z": 0.0
+	},
+	
+	"Coins":
+	[
+	{
+	  "Prefab Path": "Coin",
+	  "Coordinate X": 5.0,
+	  "Coordinate Y": 5.0,
+	  "Coordinate Z": 5.0
+	},
+
+	{
+	  "Prefab Path": "Coin",
+	  "Coordinate X": 5.0,
+	  "Coordinate Y": 5.0,
+	  "Coordinate Z": 5.0
+	}
+	],
+	
+	"Enemies":
+	[
+	{
+	  "Prefab Path": "Enemy",
+	  "Coordinate X": 5.0,
+	  "Coordinate Y": 5.0,
+	  "Coordinate Z": 5.0
+	},
+
+	{
+	  "Prefab Path": "Enemy",
+	  "Coordinate X": 5.0,
+	  "Coordinate Y": 5.0,
+	  "Coordinate Z": 5.0
+	}
+	],
+	
+	"Platforms":
+	[
+	{
+	  "Prefab Path": "Platform",
+	  "Coordinate X": -3.0,
+	  "Coordinate Y": 0.6,
+	  "Coordinate Z": 1.2
+	},
+
+	{
+	  "Prefab Path": "Platform",
+	  "Coordinate X": -0.6,
+	  "Coordinate Y": 1.2,
+	  "Coordinate Z": 1.2
+	}
+	]
+}
+

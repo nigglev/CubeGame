@@ -1,0 +1,65 @@
+{
+  "Scene Name": "Scene 1",
+  "Player": {
+    "Prefab Path": "Player",
+    "Coordinate X": -6.183,
+    "Coordinate Y": 0.23,
+    "Coordinate Z": 1.6
+  },
+  "Coins": [
+    {
+      "Prefab Path": "Coin",
+      "Coordinate X": 0.8247247,
+      "Coordinate Y": 1.893,
+      "Coordinate Z": -1.609
+    },
+    {
+      "Prefab Path": "Coin",
+      "Coordinate X": 0.8247247,
+      "Coordinate Y": 1.893,
+      "Coordinate Z": -1.609
+    }
+  ],
+  "Goals": [
+    {
+      "Prefab Path": "Goal",
+      "Coordinate X": -0.37,
+      "Coordinate Y": 1.15,
+      "Coordinate Z": -0.72
+    }
+  ],
+  "Enemies": [
+    {
+      "Prefab Path": "Enemy",
+      "Coordinate X": -3.406,
+      "Coordinate Y": 0.195,
+      "Coordinate Z": 1.59
+    },
+    {
+      "Prefab Path": "Enemy",
+      "Coordinate X": -3.406,
+      "Coordinate Y": 0.195,
+      "Coordinate Z": 1.59
+    }
+  ],
+  "Platforms": [
+    {
+      "Prefab Path": "Platform",
+      "Coordinate X": -2.90510845,
+      "Coordinate Y": 0.6903192,
+      "Coordinate Z": 1.20280182
+    },
+    {
+      "Prefab Path": "Platform",
+      "Coordinate X": -2.90510845,
+      "Coordinate Y": 0.6903192,
+      "Coordinate Z": 1.20280182
+    },
+    {
+      "Prefab Path": "Platform",
+      "Coordinate X": -2.90510845,
+      "Coordinate Y": 0.6903192,
+      "Coordinate Z": 1.20280182
+    }
+  ]
+}
