@@ -5,18 +5,19 @@ using UnityEngine;
 
 public enum EStateType {Idle, Accelerate, GetSlow, Stick}
 
-
 public interface ICameraStateOwner
 {
     Vector3 GetVectorBetweenCameraAndPoint();
     Vector3 GetCameraVelocity();
     Vector3 GetPointVelocity();
+    float GetCameraAcceleration();
     float GetCameraDeceleration();
-    float GetPrevFrameDistance();
+    bool IsAngleObtuse();
 
-    void TurnOnOffAcceleration(bool is_turn_on);
-    void SetCameraPositionToDesired();
-    void SetStopAccelerating(bool is_to_stop);
+    void StopAllCameraMovements();
+    void SetCameraToAcceleration();
+    void SetCameraToDeceleration();
+
 }
 
 public interface ICameraState
@@ -32,6 +33,7 @@ public class CCameraState_Idle : ICameraState
     public CCameraState_Idle(ICameraStateOwner in_owner)
     {
         _owner = in_owner;
+        //_owner.StopAllCameraMovements();
     }
 
     public EStateType Update(float in_time)
@@ -40,12 +42,12 @@ public class CCameraState_Idle : ICameraState
         Vector3 cam_velocity_project = Vector3.Project(_owner.GetCameraVelocity(), _owner.GetVectorBetweenCameraAndPoint().normalized);
         Vector3 point_velocity_project = Vector3.Project(_owner.GetPointVelocity(), _owner.GetVectorBetweenCameraAndPoint().normalized);
 
-        Debug.Log(string.Format("IDLE: Camera Velocity Project = {0} , Point Velocity Project = {1}", 
-            cam_velocity_project.magnitude, point_velocity_project.magnitude));
+        Debug.Log(string.Format("IDLE: Camera Velocity Project = {0} , Point Velocity Project = {1}, Distance = {2}", 
+            cam_velocity_project.magnitude, point_velocity_project.magnitude, _owner.GetVectorBetweenCameraAndPoint().magnitude));
 
         if (cam_velocity_project.magnitude < point_velocity_project.magnitude)
         {
-            Debug.Log("GO TO ACCELERATE");
+            Debug.Log(string.Format("GO TO ACCELERATE; Distance = {0}", _owner.GetVectorBetweenCameraAndPoint().magnitude));
             return EStateType.Accelerate;
         }
         
@@ -65,8 +67,8 @@ public class CCameraState_Accelerate : ICameraState
     public CCameraState_Accelerate(ICameraStateOwner in_owner)
     {
         _owner = in_owner;
-        _owner.TurnOnOffAcceleration(true);
-        _owner.SetStopAccelerating(false);
+        //_owner.SetAccelerationType(EAccelerationType.Accelerate);
+        _owner.SetCameraToAcceleration();
     }
     
     public EStateType Update(float in_time)
@@ -78,12 +80,11 @@ public class CCameraState_Accelerate : ICameraState
         Debug.Log(string.Format("ACCELERATE: Break distance = {0}, Current Camera Velocity = {1}, Current Point Velocity = {2}, Distance Between Camera and Point = {3}", 
             break_distance, cur_velocity, _owner.GetPointVelocity().magnitude, _owner.GetVectorBetweenCameraAndPoint().magnitude));
 
-
         if (break_distance < _owner.GetVectorBetweenCameraAndPoint().magnitude)
             return EStateType.Accelerate;
         else
         {
-            Debug.Log("GO TO GETSLOW");
+            Debug.Log(string.Format("GO TO GETSLOW; Distance = {0}", _owner.GetVectorBetweenCameraAndPoint().magnitude));
             return EStateType.GetSlow;
         }
             
@@ -99,26 +100,34 @@ public class CCameraState_Accelerate : ICameraState
 public class CCameraState_GetSlow : ICameraState
 {
     ICameraStateOwner _owner;
+    float _deceleration;
 
     public CCameraState_GetSlow(ICameraStateOwner in_owner)
     {
         _owner = in_owner;
-        _owner.TurnOnOffAcceleration(false);
+        _owner.SetCameraToDeceleration();
     }
 
     public EStateType Update(float in_time)
     {
-        if(_owner.GetVectorBetweenCameraAndPoint().magnitude > _owner.GetPrevFrameDistance())
+        //if(Mathf.Approximately(_owner.GetVectorBetweenCameraAndPoint().magnitude, 0f))
+        //if(_owner.GetVectorBetweenCameraAndPoint().magnitude < 0.001f)
+        if(_owner.IsAngleObtuse())
         {
-            _owner.SetCameraPositionToDesired();
+            _owner.StopAllCameraMovements();
+            Debug.Log(string.Format("GO TO IDLE; Distance = {0}", _owner.GetVectorBetweenCameraAndPoint().magnitude));
+            return EStateType.Idle;
         }
 
-        if (Mathf.Approximately(_owner.GetPointVelocity().magnitude, 0f))
+
+        Vector3 cam_velocity_project = Vector3.Project(_owner.GetCameraVelocity(), _owner.GetVectorBetweenCameraAndPoint().normalized);
+        Vector3 point_velocity_project = Vector3.Project(_owner.GetPointVelocity(), _owner.GetVectorBetweenCameraAndPoint().normalized);
+
+        if (cam_velocity_project.magnitude < point_velocity_project.magnitude)
         {
-            _owner.SetCameraPositionToDesired();
-            _owner.SetStopAccelerating(true);
-            return EStateType.Idle;
-        }   
+            Debug.Log(string.Format("GO TO ACCELERATE; Distance = {0}", _owner.GetVectorBetweenCameraAndPoint().magnitude));
+            return EStateType.Accelerate;
+        }
 
         Debug.Log(string.Format("GETSLOW: Current Camera Velocity = {0}, Current Point Velocity = {1}, Distance Between Camera and Point = {2}", 
             _owner.GetCameraVelocity().magnitude, _owner.GetPointVelocity().magnitude, _owner.GetVectorBetweenCameraAndPoint().magnitude));
@@ -131,35 +140,6 @@ public class CCameraState_GetSlow : ICameraState
         return EStateType.GetSlow;
     }
 }
-
-
-//public class CCameraState_Stick : ICameraState
-//{
-//    ICameraStateOwner _owner;
-
-//    public CCameraState_Stick(ICameraStateOwner in_owner)
-//    {
-//        _owner = in_owner;
-//    }
-
-//    public EStateType Update(float in_time)
-//    {
-//        _owner.SetCameraPositionToDesired();
-
-//        if (_owner.GetPointVelocity().magnitude < 0.01f)
-//            return EStateType.Idle;
-
-//        Debug.Log(string.Format("STICK: Current Camera Velocity = {0}, Current Point Velocity = {1}, Distance Between Camera and Point = {2}", 
-//            _owner.GetCameraVelocity().magnitude, _owner.GetPointVelocity().magnitude, _owner.GetVectorBetweenCameraAndPoint().magnitude));
-//        return EStateType.Stick;
-//    }
-
-//    public EStateType GetStateType()
-//    {
-//        return EStateType.Stick;
-//    }
-//}
-
 
 public class DesiredCameraPoint
 {
@@ -209,11 +189,17 @@ public class CameraController4 : MonoBehaviour, ICameraStateOwner
     private ICameraState _current_state;
 
     private Vector3 _velocity;
-    private float _acceleration;
-    private float _deceleration;
-    private bool _turn_on_accelerate;
-    private bool _stop_accelerating;
-    private float _prev_frame_distance;
+    private float _fvel;
+    [SerializeField]
+    private float _acceleration_value = 1.5f;
+    [SerializeField]
+    private float _deceleration_value = -0.5f;
+    private float _acc;
+    bool _is_obtuse_angle;
+
+
+
+    
 
     void Start ()
     {
@@ -231,11 +217,11 @@ public class CameraController4 : MonoBehaviour, ICameraStateOwner
         _desired_camera_point = new DesiredCameraPoint(DesiredCameraPos(), Vector3.zero);
         _cam_transform.position = DesiredCameraPos();
 
-        _acceleration = 0.5f;
-        _deceleration = -5f;
-        _turn_on_accelerate = false;
-        _stop_accelerating = false;
-
+        //_acceleration_value = 10f;
+        //_deceleration_value = -0.5f;
+        _acc = 0f;
+        _fvel = 0f;
+        _is_obtuse_angle = false;
     }
 
 
@@ -248,11 +234,7 @@ public class CameraController4 : MonoBehaviour, ICameraStateOwner
             return;
 
         _desired_camera_point.SetCurrentPosition(DesiredCameraPos(), in_time);
-        float acc = _turn_on_accelerate ? _acceleration : _deceleration;
-        if (_stop_accelerating)
-            acc = 0f;
-        _prev_frame_distance = GetVectorBetweenCameraAndPoint().magnitude;
-        UpdateCameraVelocityAndPosition(in_time, acc);
+        UpdateCameraVelocityAndPosition(in_time);
 
         EStateType new_state = _current_state.Update(in_time);
         if (new_state != _current_state.GetStateType())
@@ -271,18 +253,41 @@ public class CameraController4 : MonoBehaviour, ICameraStateOwner
             case EStateType.Idle: return new CCameraState_Idle(this);
             case EStateType.Accelerate: return new CCameraState_Accelerate(this);
             case EStateType.GetSlow: return new CCameraState_GetSlow(this);
-            //case EStateType.Stick: return new CCameraState_Stick(this);
         }
 
         return null;
     }
 
-    public void UpdateCameraVelocityAndPosition(float in_time, float in_acceleration)
+    public void StopAllCameraMovements()
     {
-        _velocity = Vector3.Project(_velocity, GetVectorBetweenCameraAndPoint().normalized);
-        _cam_transform.position += _velocity * in_time + GetVectorBetweenCameraAndPoint().normalized * in_acceleration * in_time * in_time / 2;
-        Vector3 temp = GetVectorBetweenCameraAndPoint().normalized * in_acceleration * in_time;
-        _velocity = _velocity + temp;
+        _velocity = Vector3.zero;
+        _fvel = 0f;
+        _acc = 0f;
+    }
+
+    public void UpdateCameraVelocityAndPosition(float in_time)
+    {
+
+        Vector3 dir_norm = GetVectorBetweenCameraAndPoint().normalized;
+        _velocity = Vector3.Project(_velocity, dir_norm);
+
+        Vector3 next_camera_pos = _cam_transform.position + _velocity * in_time + dir_norm * _acc * in_time * in_time / 2;
+        Vector3 next_vector = _desired_camera_point.GetCurrentPosition() - next_camera_pos;
+        float angle = Vector3.Angle(dir_norm, next_vector);
+
+        
+
+        if (angle < 90f)
+        {
+            _cam_transform.position = next_camera_pos;
+            _is_obtuse_angle = false;
+        }
+        else
+            _is_obtuse_angle = true;
+        //_cam_transform.position += _velocity * in_time + dir_norm * in_acceleration * in_time * in_time / 2;
+        _fvel += _acc * in_time;
+        _velocity = _fvel * dir_norm;        
+
         Vector3 relative_position = _player.position - _cam_transform.position;
         _cam_transform.rotation = Quaternion.LookRotation(relative_position);
     }
@@ -294,7 +299,7 @@ public class CameraController4 : MonoBehaviour, ICameraStateOwner
 
     public Vector3 GetVectorBetweenCameraAndPoint()
     {
-        return DesiredCameraPos() - _cam_transform.position;
+        return _desired_camera_point.GetCurrentPosition() - _cam_transform.position;
     }
 
     public Vector3 GetCameraVelocity()
@@ -302,40 +307,34 @@ public class CameraController4 : MonoBehaviour, ICameraStateOwner
         return _velocity;
     }
 
+    public bool IsAngleObtuse()
+    {
+        return _is_obtuse_angle;
+    }
+
     public Vector3 GetPointVelocity()
     {
         return _desired_camera_point.GetCurrentVelocity();
     }
 
+    public float GetCameraAcceleration()
+    {
+        return _acceleration_value;
+    }
+
     public float GetCameraDeceleration()
     {
-        return _deceleration;
+        return _deceleration_value;
     }
 
-    public float GetPrevFrameDistance()
+    public void SetCameraToAcceleration()
     {
-        return _prev_frame_distance;
+        _acc = _acceleration_value;
     }
 
-    public void SetCameraAcceleration(float in_acceleration)
+    public void SetCameraToDeceleration()
     {
-        _acceleration = in_acceleration;
-    }
-
-    public void TurnOnOffAcceleration(bool is_turn_on)
-    {
-        _turn_on_accelerate = is_turn_on;
-    }
-
-    public void SetCameraPositionToDesired()
-    {
-        _cam_transform.position = DesiredCameraPos();
-        _velocity = Vector3.zero;
-    }
-
-    public void SetStopAccelerating(bool is_to_stop)
-    {   
-        _stop_accelerating = is_to_stop;
+        _acc = _deceleration_value;
     }
 
     private void OnNewPlayer(object sender, EventArgs e)
@@ -343,7 +342,7 @@ public class CameraController4 : MonoBehaviour, ICameraStateOwner
         _player = CWorld.Instance.GetPlayer();
     }
 
-    private void OnDrawGizmos()
+    private void OnDrawGizmos() 
     {
         if (_player == null)
             return;
